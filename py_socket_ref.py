@@ -1,3 +1,9 @@
+#!/usr/bin/python3
+#############################
+#Description: operates as a simple FTP server
+#Input: port to run on (int)
+#############################
+
 import socket as S
 from threading import Thread
 import sys

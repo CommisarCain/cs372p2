@@ -35,23 +35,76 @@ class FTPClient:
 
 
 
-    def __init__(self, port, host_addr, dataport=33485):
+    def __init__(self, serverport, host_addr="127.0.0.1", port=33486, dataport=33485):
         self.s = S.socket(S.AF_INET, S.SOCK_STREAM)
-        self.s.bind(("127.0.0.1", int(port)))
+        self.s.bind((host_addr, int(port)))
         self.ds = S.socket(S.AF_INET, S.SOCK_STREAM)
-        self.ds.bind(("127.0.0.1", int(dataport)))
+        self.ds.bind((host_addr, int(dataport)))
         self.ds.listen(1)
         self.running = True
+        self.action = 0
+        self.BUFFER_SZ = 4096
+        self.host_addr = host_addr
+        self.port = port
+        self.dataport = dataport
+        self.serverport = serverport
 
 
-    def
+    def get_cmd(self):
+        if len(sys.argv) > 2: #we have a command
+            pass
+        else: #no command found
+            cmd = input("Input command: ")
+            cmd = cmd.split()
+            if cmd[0] == "-l":
+                self.comm_server(1)
+                self.dataport_handler()
+                self.dc()
+            elif len(cmd) == 2 and cmd[0] == "-g":
+                self.comm_server(2, content=cmd[1])
+                self.dataport_handler()
+                self.dc()
+            else:
+                self.comm_server(3, content="Unrecognized Input")
+                self.dataport_handler()
+                self.dc()
+
+    def comm_server(self, cmd_type, content=""):
+        self.s.connect((self.host_addr,self.serverport))
+        if cmd_type == 1:
+            self.s.send("1".encode())
+        elif cmd_type == 2:
+            self.s.send(str("2,"+content).encode())
+        else:
+            self.s.send(str("3,"+content).encode())
+
+
+    def dataport_handler(self):
+        server, server_addr = self.ds.accept()
+        msg = server.recv(self.BUFFER_SZ)
+        msg.decode()
+        msg = mgs.split(',')
+        if msg[0] == "2":
+            print("String file incoming!")
+        else:
+            print(msg[1])
+
+    def dc(self):
+        try:
+            self.s.close()
+            self.ds.close()
+        except:
+            pass
+        print("Closing Time, you dont have to go home!!!!!")
+        print("but you can't run heeeeeere")
 
 
 
 
 
 
-
+c = FTPClient(33945)
+c.get_cmd()
 
 
 
