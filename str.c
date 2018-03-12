@@ -122,10 +122,10 @@ int find_string(char* target, char* in_string){
   if(tl>il){
     return 0;
   }
-
-  for(int i = il-tl; i>=0; i--){
+  int i,j;
+  for( i = il-tl; i>=0; i--){
     found = 1;
-    for(int j = 0; j < tl; j++){
+    for( j = 0; j < tl; j++){
       //printf("instring:%c,  target:%c \n",in_string[i+j], target[j] );
       if(in_string[i+j] != target[j]){
         found = 0;
@@ -174,7 +174,8 @@ struct STR* get_delim_at_with(char* target, int index, char delim){
   else{
     st = new_str(t_end - t_begin);
     //printf("newstring length: %d\n",st->length );
-    for(int j = t_begin; j<t_end; j++ ){
+    int j;
+    for(j = t_begin; j<t_end; j++ ){
       st->str[j-t_begin] = target[j];
     }
     return st;
