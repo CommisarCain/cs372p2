@@ -8,6 +8,8 @@ and provide some rudimentary functionality
 
 
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 //primary data strcture of library
 struct STR{
@@ -25,7 +27,7 @@ struct STR* new_str(int str_length){
   return st;
 }
 
-// TODO: new_str_with
+//copies string to new struct
 struct STR* new_str_with(int str_length, char* to_copy){
   char* s = (char*) malloc((int) (str_length+1 * sizeof(char)));
   struct STR* st = (struct STR*) malloc((int)(sizeof(struct STR)));
@@ -80,11 +82,61 @@ int compare_string(char* target1, char* target2){
 
 //copies a string to a STR struct string
 void copy_to(struct STR* target, char* to_copy){
+  clear_str(target);
   int i = 0;
   while(i < target->length && to_copy[i] != '\0'){
     target->str[i] = to_copy[i];
     i++;
   }
+}
+
+//returms length of valid string
+int str_length(struct STR* target){
+  int length = 0;
+  int i = 0;
+  do{
+
+    i++;
+  }while(target->str[i] != '\0');
+  return i;
+}
+
+//returms length of valid string
+int string_length(char* target){
+  int length = 0;
+  int i = 0;
+  do{
+
+    i++;
+  }while(target[i] != '\0');
+  return i;
+}
+
+int find_string(char* target, char* in_string){
+  int tl = 0;
+  int il = 0;
+  tl = string_length(target);
+  il = string_length(in_string);
+  int found = 0;
+
+  if(tl>il){
+    return 0;
+  }
+
+  for(int i = il-tl; i>=0; i--){
+    found = 1;
+    for(int j = 0; j < tl; j++){
+      //printf("instring:%c,  target:%c \n",in_string[i+j], target[j] );
+      if(in_string[i+j] != target[j]){
+        found = 0;
+      }
+    }
+    if(found){
+      return 1;
+    }
+  }
+  return 0;
+
 }
 
 //returns the data of index in a delimited string
@@ -109,15 +161,19 @@ struct STR* get_delim_at_with(char* target, int index, char delim){
         t_end = i;
     }
 
+    //printf("STR delim debug:  d_count:%d, t_found:%d, target[i]%c, t_begin: %d, t_end:%d \n", d_count, t_found, target[i],t_begin, t_end);
 
     i++;
   }while(target[i] != '\0');
+  if(t_end < t_begin)
+    t_end = i;
 
   if (t_end == 0){
     return st = new_str_with(0, 0);
   }
   else{
     st = new_str(t_end - t_begin);
+    //printf("newstring length: %d\n",st->length );
     for(int j = t_begin; j<t_end; j++ ){
       st->str[j-t_begin] = target[j];
     }
@@ -130,10 +186,4 @@ struct STR* get_delim_at_with(char* target, int index, char delim){
 void free_str(struct STR* target){
   free(target->str);
   free(target);
-}
-
-int main(argv){
-  struct STR* s = new_str_with(10, "what");
-  printf("%s\n",s->str );
-  printf("%d\n",s->length );
 }

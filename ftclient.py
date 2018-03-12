@@ -30,12 +30,14 @@
 import socket as S
 from threading import Thread
 import sys
+import os
+import datetime
 
 class FTPClient:
 
 
 
-    def __init__(self, serverport, host_addr="127.0.0.1", port=33486, dataport=33485):
+    def __init__(self, serverport, host_addr="127.0.0.1", port=33489, dataport=33485):
         self.s = S.socket(S.AF_INET, S.SOCK_STREAM)
         self.s.bind((host_addr, int(port)))
         self.ds = S.socket(S.AF_INET, S.SOCK_STREAM)
@@ -48,6 +50,7 @@ class FTPClient:
         self.port = port
         self.dataport = dataport
         self.serverport = serverport
+        self.expected_filename = "default_name"
 
 
     def get_cmd(self):
@@ -62,17 +65,26 @@ class FTPClient:
                 self.dc()
             elif len(cmd) == 2 and cmd[0] == "-g":
                 self.comm_server(2, content=cmd[1])
+                self.expected_filename = cmd[1]
                 self.dataport_handler()
                 self.dc()
             else:
+                print("Comm server 3 called")
                 self.comm_server(3, content="Unrecognized Input")
                 self.dataport_handler()
                 self.dc()
 
     def comm_server(self, cmd_type, content=""):
-        self.s.connect((self.host_addr,self.serverport))
+
+        try:
+            self.s.connect((self.host_addr,int(self.serverport)))
+            self.s.send(str(self.dataport).encode())
+            dis_msg = self.s.recv(self.BUFFER_SZ)
+            print("this is dis: " + dis_msg.decode())
+        except:
+            self.dc()
         if cmd_type == 1:
-            self.s.send("1".encode())
+            self.s.send("1,".encode())
         elif cmd_type == 2:
             self.s.send(str("2,"+content).encode())
         else:
@@ -82,16 +94,26 @@ class FTPClient:
     def dataport_handler(self):
         server, server_addr = self.ds.accept()
         msg = server.recv(self.BUFFER_SZ)
-        msg.decode()
-        msg = mgs.split(',')
+        msg = msg.decode()
+        msg = msg.split(',')
         if msg[0] == "2":
             print("String file incoming!")
+            if os.path.isfile(self.expected_filename):
+                self.expected_filename = self.expected_filename+str( datetime.datetime.now())
+            tf = open(self.expected_filename,"w")
+            tf.write(msg[1])
+            tf.close()
         else:
-            print(msg[1])
+            print(msg[1:])
 
     def dc(self):
         try:
+            self.s.shutdown(S.SHUT_RDWR)
             self.s.close()
+        except:
+            pass
+        try:
+            self.ds.shutdown(S.SHUT_RDWR)
             self.ds.close()
         except:
             pass
@@ -103,7 +125,7 @@ class FTPClient:
 
 
 
-c = FTPClient(33945)
+c = FTPClient(sys.argv[1])
 c.get_cmd()
 
 
